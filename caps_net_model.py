@@ -86,8 +86,8 @@ flags.DEFINE_string("worker_hosts", worker_hosts,
 flags.DEFINE_integer("batch_size", 32, "Batch size")
 flags.DEFINE_integer("epochs", 50, "Epochs to run")
 
-flags.DEFINE_string("path_to_data", '/data/kporter/multimnist', "Epochs to run")
-#flags.DEFINE_string("path_to_data", 'data/', "Location of the data") #to run locally
+# flags.DEFINE_string("path_to_data", '/data/kporter/multimnist', "Epochs to run")
+flags.DEFINE_string("path_to_data", 'data/', "Location of the data") #to run locally
 
 flags.DEFINE_boolean("use_mnist", False, "When false, uses notmnist dataset")
 
@@ -100,7 +100,7 @@ Set up variables
 config = tf.ConfigProto()
     
 config.gpu_options.allow_growth = True
-train_sum_freq = 100
+train_sum_freq = 5
 val_sum_freq = 500
 
 '''
@@ -109,7 +109,9 @@ Set up model
 #To make it Distributed
 device, target = device_and_target() # getting node environment
 with tf.device(device): 
-    model = CapsNet(batch=FLAGS.batch_size, mnist=FLAGS.use_mnist, data_path=FLAGS.path_to_data)
+    global_step1 = tf.train.get_or_create_global_step()
+    model = CapsNet(batch=FLAGS.batch_size, mnist=FLAGS.use_mnist, data_path=FLAGS.path_to_data,global_step=global_step1)
+step1 = tf.assign_add(global_step1,1)
 
 '''
 Load the data
@@ -120,12 +122,16 @@ trX, trY, num_tr_batch, valX, valY, num_val_batch = load_mnist(FLAGS.batch_size,
 #Format Y    
 Y = valY[:num_val_batch * FLAGS.batch_size].reshape((-1, 1))
 
+merge = tf.summary.merge_all()
+
 '''
 Run the Model
 
 Pass in target to determine the worker
 '''
 with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index == 0)) as sess:
+    train_writer = tf.summary.FileWriter('./logs/1/train ', sess.graph)
+#     counter = 0 
     for epoch in range(FLAGS.epochs):
         print("Training for epoch %d/%d:" % (epoch, FLAGS.epochs))
         
@@ -133,10 +139,12 @@ with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index
             start = step * FLAGS.batch_size
             end = start + FLAGS.batch_size
             global_step = epoch * num_tr_batch + step
-
+#             counter += 1
+            
             if global_step % train_sum_freq == 0:
-                _, loss, train_acc, summary_str = sess.run([model.train_op, model.total_loss, model.accuracy, model.train_summary])
+                _, loss, train_acc, summary_str, _ = sess.run([ model.train_op, model.total_loss, model.accuracy, merge, step1])
                 assert not np.isnan(loss), 'Something wrong! loss is nan...'
+                train_writer.add_summary(summary_str,global_step)
             else:
                 sess.run(model.train_op)
             
