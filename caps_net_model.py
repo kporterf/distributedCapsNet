@@ -126,9 +126,13 @@ Run the Model
 Pass in target to determine the worker
 '''
 <<<<<<< HEAD
+<<<<<<< HEAD
 with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index == 0), checkpoint_dir='/logs/train') as sess:
     train_writer = tf.summary.FileWriter('/logs/train', sess.graph)
 #     counter = 0 
+=======
+with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index == 0)) as sess:
+>>>>>>> parent of 45c2042... added tensorboard train tracking
 =======
 with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index == 0)) as sess:
 >>>>>>> parent of 45c2042... added tensorboard train tracking
