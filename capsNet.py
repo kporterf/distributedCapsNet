@@ -19,7 +19,7 @@ epsilon = 1e-9
 
 
 class CapsNet(object):
-    def __init__(self, is_training=True, batch=32, mnist=True, data_path='',global_step=''):
+    def __init__(self, is_training=True, batch=32, mnist=True, data_path=''):
         self.batch_size = batch
         if is_training:
             self.X, self.labels = self.get_batch_data(self.batch_size, mnist=mnist, path=data_path) 
@@ -29,8 +29,7 @@ class CapsNet(object):
             self.loss()
             self._summary()
 
-            self.global_step = global_step
-#             self.global_step = tf.Variable(0, name='global_step', trainable=False)
+            self.global_step = tf.Variable(0, name='global_step', trainable=False)
             self.optimizer = tf.train.AdamOptimizer()
 
             self.train_op = self.optimizer.minimize(self.total_loss, global_step=self.global_step)  # var_list=t_vars)
