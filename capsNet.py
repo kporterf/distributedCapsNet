@@ -30,7 +30,6 @@ class CapsNet(object):
             self._summary()
 
             self.global_step = global_step 
-            #self.global_step = tf.Variable(0, name='global_step', trainable=False)
             self.optimizer = tf.train.AdamOptimizer()
 
             self.train_op = self.optimizer.minimize(self.total_loss, global_step=self.global_step)  # var_list=t_vars)

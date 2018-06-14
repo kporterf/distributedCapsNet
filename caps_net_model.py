@@ -101,7 +101,7 @@ config = tf.ConfigProto()
     
 config.gpu_options.allow_growth = True
 train_sum_freq = 10
-val_sum_freq = 15
+val_sum_freq = 50
 
 '''
 Set up model
@@ -121,8 +121,6 @@ trX, trY, num_tr_batch, valX, valY, num_val_batch = load_mnist(FLAGS.batch_size,
 #Format Y    
 Y = valY[:num_val_batch * FLAGS.batch_size].reshape((-1, 1))
 
-merge = tf.summary.merge_all()
-
 '''
 Run the Model
 
@@ -139,8 +137,9 @@ with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index
             end = start + FLAGS.batch_size
             global_step = epoch * num_tr_batch + step
             counter += 1
+
             if global_step % train_sum_freq == 0:
-                _, loss, train_acc, summary_str, _ = sess.run([ model.train_op, model.total_loss, model.accuracy, merge, step1])
+                _, loss, train_acc, summary_str = sess.run([model.train_op, model.total_loss, model.accuracy, model.train_summary])
                 assert not np.isnan(loss), 'Something wrong! loss is nan...'
                 if FLAGS.task_index == 0:
                     train_writer.add_summary(summary_str,counter)
@@ -157,6 +156,6 @@ with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index
                     val_acc += acc
                 val_acc = val_acc / (FLAGS.batch_size * num_val_batch)
                 print (str(val_acc))
-                fi = open('/logs/test/acc.txt','a')
+                fi = open('/logs/val_acc.txt','a')
                 fi.write(str(counter)+',' +str(val_acc) + '\n')
                 fi.close()
