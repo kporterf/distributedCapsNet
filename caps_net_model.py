@@ -86,8 +86,8 @@ flags.DEFINE_string("worker_hosts", worker_hosts,
 flags.DEFINE_integer("batch_size", 32, "Batch size")
 flags.DEFINE_integer("epochs", 50, "Epochs to run")
 
-# flags.DEFINE_string("path_to_data", '/data/kporter/multimnist', "Epochs to run")
-flags.DEFINE_string("path_to_data", 'data/', "Location of the data") #to run locally
+flags.DEFINE_string("path_to_data", '/data/kporter/multimnist', "Epochs to run")
+#flags.DEFINE_string("path_to_data", 'data/', "Location of the data") #to run locally
 
 flags.DEFINE_boolean("use_mnist", False, "When false, uses notmnist dataset")
 
@@ -129,8 +129,8 @@ Run the Model
 
 Pass in target to determine the worker
 '''
-with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index == 0)) as sess:
-    train_writer = tf.summary.FileWriter('./logs/1/train ', sess.graph)
+with tf.train.MonitoredTrainingSession(master=target, is_chief=(FLAGS.task_index == 0), checkpoint_dir='/logs/train') as sess:
+    train_writer = tf.summary.FileWriter('/logs/train', sess.graph)
 #     counter = 0 
     for epoch in range(FLAGS.epochs):
         print("Training for epoch %d/%d:" % (epoch, FLAGS.epochs))
